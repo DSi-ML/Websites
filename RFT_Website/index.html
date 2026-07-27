@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RFT Math Expression — Model Comparison</title>
+  <style>
+    :root {
+      --bg: #05101f;
+      --surface: #0c1d35;
+      --surface2: #102040;
+      --border: #1a3558;
+      --base-accent: #3b82f6;
+      --ft-accent: #8b5cf6;
+      --correct: #22d26e;
+      --wrong: #f43f5e;
+      --text: #e2e8f0;
+      --muted: #7a92ae;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #050d1a 0%, #0c1d35 50%, #120830 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px 24px;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 6px;
+    }
+    .header-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--base-accent), var(--ft-accent));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #93c5fd, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-left: 56px;
+    }
+    .model-badges {
+      display: flex;
+      gap: 10px;
+      margin-left: 56px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    .badge-base { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .badge-ft   { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.3); }
+    .badge-tech { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 40px;
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .stat-base .stat-value   { color: var(--base-accent); }
+    .stat-ft .stat-value     { color: var(--ft-accent); }
+    .stat-delta .stat-value  { color: var(--correct); }
+    .stat-divider { width: 1px; height: 40px; background: var(--border); }
+    .eval-note {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .main { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── INPUT CARD ── */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+    }
+    .input-card h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+    .input-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .input-group input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 180px;
+    }
+    .input-group input:focus {
+      border-color: var(--ft-accent);
+    }
+    .input-group input.wide { min-width: 260px; }
+
+    .run-btn {
+      padding: 11px 28px;
+      background: linear-gradient(135deg, var(--base-accent), var(--ft-accent));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .run-btn:hover  { opacity: 0.9; transform: translateY(-1px); }
+    .run-btn:active { transform: translateY(0); }
+    .run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .examples-row {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .examples-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .example-chip {
+      font-size: 11px;
+      padding: 5px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .example-chip:hover {
+      background: rgba(139,92,246,0.15);
+      border-color: rgba(139,92,246,0.4);
+    }
+
+    /* ── COMPARISON GRID ── */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ── MODEL PANEL ── */
+    .model-panel {
+      background: var(--surface);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-base .panel-header { background: rgba(59,130,246,0.07); }
+    .panel-ft   .panel-header { background: rgba(139,92,246,0.07); }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .panel-base .panel-dot { background: var(--base-accent); box-shadow: 0 0 8px rgba(59,130,246,0.6); }
+    .panel-ft   .panel-dot { background: var(--ft-accent);   box-shadow: 0 0 8px rgba(139,92,246,0.6); }
+
+    .panel-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .panel-meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .meta-chip {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-weight: 600;
+    }
+    .meta-time { background: rgba(255,255,255,0.07); color: var(--muted); }
+    .meta-tokens { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+    .panel-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 280px;
+    }
+
+    /* ── IDLE STATE ── */
+    .idle-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .idle-icon { font-size: 36px; opacity: 0.3; }
+    .idle-text { font-size: 13px; }
+
+    /* ── LOADING STATE ── */
+    .loading-state {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .loading-state.active { display: flex; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--base-accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .panel-ft .spinner { border-top-color: var(--ft-accent); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .thinking-dots {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .thinking-dots span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: dot-bounce 1.2s ease-in-out infinite;
+    }
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+      40% { transform: scale(1.1); opacity: 1; }
+    }
+    .loading-label { font-size: 13px; color: var(--muted); }
+
+    /* ── RESULT STATE ── */
+    .result-state { display: none; flex-direction: column; gap: 14px; }
+    .result-state.active { display: flex; }
+
+    /* Answer Block */
+    .answer-block {
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .answer-correct { background: rgba(34,210,110,0.1); border: 1px solid rgba(34,210,110,0.3); }
+    .answer-wrong   { background: rgba(244,63,94,0.1);  border: 1px solid rgba(244,63,94,0.3); }
+    .answer-unknown { background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
+
+    .answer-icon { font-size: 26px; flex-shrink: 0; }
+    .answer-content { flex: 1; min-width: 0; }
+    .answer-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .answer-expr {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
+    }
+    .answer-correct .answer-expr { color: var(--correct); }
+    .answer-wrong   .answer-expr { color: var(--wrong); }
+    .answer-unknown .answer-expr { color: var(--text); }
+
+    .answer-eval {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .answer-verdict {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .verdict-correct { background: rgba(34,210,110,0.2); color: var(--correct); }
+    .verdict-wrong   { background: rgba(244,63,94,0.2);  color: var(--wrong); }
+    .verdict-unknown { background: rgba(255,255,255,0.08); color: var(--muted); }
+
+    /* Think Accordion */
+    .think-accordion {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .think-header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .think-header:hover { background: rgba(255,255,255,0.06); }
+    .think-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .think-title-icon { font-size: 14px; }
+    .think-chevron {
+      color: var(--muted);
+      font-size: 12px;
+      transition: transform 0.2s;
+    }
+    .think-accordion.open .think-chevron { transform: rotate(180deg); }
+    .think-body {
+      display: none;
+      padding: 12px 14px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #94a3b8;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .think-accordion.open .think-body { display: block; }
+
+    /* Raw output fallback */
+    .raw-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .raw-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* Error */
+    .error-block {
+      background: rgba(244,63,94,0.08);
+      border: 1px solid rgba(244,63,94,0.25);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #fb7185;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 40px;
+      padding: 20px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 12px;
+    }
+    .footer-left { font-size: 12px; color: var(--muted); }
+    .footer-left strong { color: var(--text); }
+    .footer-right { display: flex; gap: 10px; flex-wrap: wrap; }
+    .footer-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .comparison-grid { grid-template-columns: 1fr; }
+      .stats-bar { gap: 20px; }
+      .eval-note { margin-left: 0; }
+      .main { padding: 20px 18px; }
+      .header { padding: 20px 18px 16px; }
+    }
+
+    /* ── ANIMATIONS ── */
+    .result-state.active { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* progress bar (timing) */
+    .progress-bar-wrap {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.1s linear;
+    }
+    .panel-base .progress-bar { background: var(--base-accent); }
+    .panel-ft   .progress-bar { background: var(--ft-accent); }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-icon">🧮</div>
+    <h1>RFT Math Expression — Model Comparison</h1>
+  </div>
+  <p>GRPO Reinforcement Fine-Tuning · Live side-by-side inference · Qwen2.5-3B</p>
+  <div class="model-badges">
+    <span class="badge badge-base">⬡ Base Model</span>
+    <span class="badge badge-ft">★ Fine-Tuned (GRPO)</span>
+    <span class="badge badge-tech">RunPod Serverless</span>
+    <span class="badge badge-tech">Qwen2.5-3B-Instruct</span>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat stat-base">
+    <div class="stat-label">Base Model Accuracy</div>
+    <div class="stat-value">30%</div>
+    <div class="stat-sub">Qwen2.5-3B-Instruct</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat stat-ft">
+    <div class="stat-label">Fine-Tuned Accuracy</div>
+    <div class="stat-value">80%</div>
+    <div class="stat-sub">GRPO RFT · 2 epochs</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat stat-delta">
+    <div class="stat-label">Improvement</div>
+    <div class="stat-value">+50pp</div>
+    <div class="stat-sub">percentage points</div>
+  </div>
+  <div class="eval-note">📊 Evaluated on 30 held-out samples · Countdown-style dataset</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- INPUT CARD -->
+  <div class="input-card">
+    <h2>Enter a Problem</h2>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Numbers (3, comma-separated)</label>
+        <input type="text" id="numbersInput" class="wide" placeholder="e.g.  2, 3, 4" value="2, 3, 4" />
+      </div>
+      <div class="input-group">
+        <label>Target Number</label>
+        <input type="number" id="targetInput" placeholder="e.g.  14" value="14" />
+      </div>
+      <button class="run-btn" id="runBtn" onclick="runComparison()">
+        ▶ &nbsp;Run Comparison
+      </button>
+    </div>
+
+    <div class="examples-row">
+      <span class="examples-label">Quick examples:</span>
+      <span class="example-chip" onclick="setExample([2,3,4], 14)">2, 3, 4 → 14</span>
+      <span class="example-chip" onclick="setExample([6,7,5], 47)">6, 7, 5 → 47</span>
+      <span class="example-chip" onclick="setExample([3,5,8], 19)">3, 5, 8 → 19</span>
+      <span class="example-chip" onclick="setExample([2,7,9], 25)">2, 7, 9 → 25</span>
+      <span class="example-chip" onclick="setExample([4,6,9], 30)">4, 6, 9 → 30</span>
+      <span class="example-chip" onclick="setExample([1,8,9], 17)">1, 8, 9 → 17</span>
+      <span class="example-chip" onclick="setExample([3,7,8], 11)">3, 7, 8 → 11</span>
+    </div>
+  </div>
+
+  <!-- COMPARISON GRID -->
+  <div class="comparison-grid">
+
+    <!-- BASE MODEL PANEL -->
+    <div class="model-panel panel-base" id="basePanel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-dot"></div>
+          <div>
+            <div class="panel-name">Base Model</div>
+            <div class="panel-subtitle">Qwen/Qwen2.5-3B-Instruct</div>
+          </div>
+        </div>
+        <div class="panel-meta">
+          <span class="meta-chip meta-time" id="baseTime">—</span>
+          <span class="meta-chip meta-tokens" id="baseTokens">—</span>
+        </div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="baseProgress"></div></div>
+      <div class="panel-body">
+        <div class="idle-state" id="baseIdle">
+          <div class="idle-icon">○</div>
+          <div class="idle-text">Waiting for input…</div>
+        </div>
+        <div class="loading-state" id="baseLoading">
+          <div class="spinner"></div>
+          <div class="thinking-dots"><span></span><span></span><span></span></div>
+          <div class="loading-label" id="baseLoadingLabel">Calling base model…</div>
+        </div>
+        <div class="result-state" id="baseResult"></div>
+      </div>
+    </div>
+
+    <!-- FINE-TUNED PANEL -->
+    <div class="model-panel panel-ft" id="ftPanel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-dot"></div>
+          <div>
+            <div class="panel-name">Fine-Tuned Model</div>
+            <div class="panel-subtitle">Qwen2.5-3B · GRPO RFT · 2 epochs</div>
+          </div>
+        </div>
+        <div class="panel-meta">
+          <span class="meta-chip meta-time" id="ftTime">—</span>
+          <span class="meta-chip meta-tokens" id="ftTokens">—</span>
+        </div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="ftProgress"></div></div>
+      <div class="panel-body">
+        <div class="idle-state" id="ftIdle">
+          <div class="idle-icon">★</div>
+          <div class="idle-text">Waiting for input…</div>
+        </div>
+        <div class="loading-state" id="ftLoading">
+          <div class="spinner"></div>
+          <div class="thinking-dots"><span></span><span></span><span></span></div>
+          <div class="loading-label" id="ftLoadingLabel">Calling fine-tuned model…</div>
+        </div>
+        <div class="result-state" id="ftResult"></div>
+      </div>
+    </div>
+
+  </div><!-- /comparison-grid -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">
+      <strong>GRPO Reinforcement Fine-Tuning POC</strong> · Countdown Math Expressions · 500-sample dataset
+    </div>
+    <div class="footer-right">
+      <span class="footer-tag">GRPO</span>
+      <span class="footer-tag">Qwen2.5-3B</span>
+      <span class="footer-tag">RunPod</span>
+      <span class="footer-tag">Vercel</span>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function setExample(nums, target) {
+  document.getElementById('numbersInput').value = nums.join(', ');
+  document.getElementById('targetInput').value = target;
+}
+
+// Simple recursive-descent parser for + - * ( ) — no eval, no Function()
+function safeEval(expr) {
+  const tokens = [];
+  const src = expr.replace(/\s+/g, '');
+  let i = 0;
+  while (i < src.length) {
+    const m = src.slice(i).match(/^(\d+|[+\-*()])/);
+    if (!m) return null;
+    tokens.push(m[1]);
+    i += m[1].length;
+  }
+  let pos = 0;
+  const peek = () => tokens[pos];
+  const consume = () => tokens[pos++];
+
+  function parseExpr() {
+    let left = parseTerm();
+    while (peek() === '+' || peek() === '-') {
+      const op = consume();
+      const right = parseTerm();
+      left = op === '+' ? left + right : left - right;
+    }
+    return left;
+  }
+  function parseTerm() {
+    let left = parseFactor();
+    while (peek() === '*') { consume(); left *= parseFactor(); }
+    return left;
+  }
+  function parseFactor() {
+    const tok = peek();
+    if (tok === '(') {
+      consume();
+      const v = parseExpr();
+      consume(); // )
+      return v;
+    }
+    if (/^\d+$/.test(tok)) { consume(); return parseInt(tok, 10); }
+    if (tok === '-') { consume(); return -parseFactor(); }
+    throw new Error('unexpected: ' + tok);
+  }
+
+  try {
+    const val = parseExpr();
+    if (pos !== tokens.length) return null;
+    return val;
+  } catch { return null; }
+}
+
+function extractNumbersFromExpr(expr) {
+  return (expr.match(/\d+/g) || []).map(Number).sort((a, b) => a - b);
+}
+
+function parseResponse(rawOutput) {
+  let thinking = null, answer = null;
+
+  const thinkMatch = rawOutput.match(/<think>([\s\S]*?)<\/think>/i);
+  if (thinkMatch) thinking = thinkMatch[1].trim();
+
+  const answerMatch = rawOutput.match(/<answer>([\s\S]*?)<\/answer>/i);
+  if (answerMatch) {
+    answer = answerMatch[1].trim();
+  } else {
+    // Fallback: expression before an '=' sign
+    const eqMatch = rawOutput.match(/([0-9][0-9+\-*/()\s]{1,60}?)\s*=/);
+    if (eqMatch) answer = eqMatch[1].trim();
+  }
+
+  return { thinking, answer };
+}
+
+function checkCorrect(answer, inputNumbers, target) {
+  if (!answer) return { correct: false };
+  const usedNums = extractNumbersFromExpr(answer).sort((a, b) => a - b);
+  const expected = [...inputNumbers].map(Number).sort((a, b) => a - b);
+  if (JSON.stringify(usedNums) !== JSON.stringify(expected)) {
+    return { correct: false, reason: 'wrong numbers' };
+  }
+  const result = safeEval(answer);
+  if (result === null) return { correct: false, reason: 'invalid expr' };
+  const correct = Math.abs(result - target) < 1e-6;
+  return { correct, result };
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+
+function setLoading(model) {
+  const prefix = model === 'base' ? 'base' : 'ft';
+  document.getElementById(prefix + 'Idle').style.display = 'none';
+  document.getElementById(prefix + 'Loading').classList.add('active');
+  document.getElementById(prefix + 'Result').classList.remove('active');
+  document.getElementById(prefix + 'Result').innerHTML = '';
+  document.getElementById(prefix + 'Time').textContent = '…';
+  document.getElementById(prefix + 'Tokens').textContent = '…';
+  animateProgress(prefix);
+}
+
+function animateProgress(prefix) {
+  const bar = document.getElementById(prefix + 'Progress');
+  bar.style.width = '0%';
+  let pct = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(pct + (100 - pct) * 0.04, 92);
+    bar.style.width = pct + '%';
+  }, 200);
+  bar._interval = iv;
+}
+
+function finishProgress(prefix) {
+  const bar = document.getElementById(prefix + 'Progress');
+  clearInterval(bar._interval);
+  bar.style.width = '100%';
+  setTimeout(() => { bar.style.width = '0%'; }, 800);
+}
+
+function renderResult(model, data, inputNumbers, target) {
+  const prefix = model === 'base' ? 'base' : 'ft';
+
+  document.getElementById(prefix + 'Loading').classList.remove('active');
+  document.getElementById(prefix + 'Time').textContent =
+    data.inference_time_ms !== undefined
+      ? (data.inference_time_ms / 1000).toFixed(2) + 's'
+      : '—';
+  if (data.token_count) {
+    document.getElementById(prefix + 'Tokens').textContent = data.token_count + ' tok';
+  }
+  finishProgress(prefix);
+
+  const container = document.getElementById(prefix + 'Result');
+  container.innerHTML = '';
+
+  if (data.error) {
+    container.innerHTML = `<div class="error-block">⚠️ ${escapeHtml(data.error)}</div>`;
+    container.classList.add('active');
+    return;
+  }
+
+  const { thinking, answer } = parseResponse(data.raw_output || '');
+  const check = answer ? checkCorrect(answer, inputNumbers, target) : { correct: false };
+
+  // Answer block
+  const blockClass = answer
+    ? (check.correct ? 'answer-correct' : 'answer-wrong')
+    : 'answer-unknown';
+  const icon = answer
+    ? (check.correct ? '✅' : '❌')
+    : '❓';
+  const verdictClass = answer
+    ? (check.correct ? 'verdict-correct' : 'verdict-wrong')
+    : 'verdict-unknown';
+  const verdictText = answer
+    ? (check.correct ? 'CORRECT' : 'WRONG')
+    : 'NO ANSWER';
+
+  const evalText = check.result !== undefined
+    ? `= ${check.result} (target: ${target})`
+    : (answer ? `target: ${target}` : '');
+
+  const answerBlock = document.createElement('div');
+  answerBlock.className = 'answer-block ' + blockClass;
+  answerBlock.innerHTML = `
+    <div class="answer-icon">${icon}</div>
+    <div class="answer-content">
+      <div class="answer-label">Expression</div>
+      <div class="answer-expr">${answer ? escapeHtml(answer) : '(none found)'}</div>
+      ${evalText ? `<div class="answer-eval">${escapeHtml(evalText)}</div>` : ''}
+    </div>
+    <div class="answer-verdict ${verdictClass}">${verdictText}</div>
+  `;
+  container.appendChild(answerBlock);
+
+  // Thinking accordion
+  if (thinking) {
+    const acc = document.createElement('div');
+    acc.className = 'think-accordion';
+    acc.innerHTML = `
+      <div class="think-header" onclick="toggleAccordion(this.parentElement)">
+        <div class="think-title">
+          <span class="think-title-icon">💭</span>
+          <span>Model Reasoning (Chain of Thought)</span>
+        </div>
+        <span class="think-chevron">▾</span>
+      </div>
+      <div class="think-body">${escapeHtml(thinking)}</div>
+    `;
+    container.appendChild(acc);
+  } else if (data.raw_output && !answer) {
+    // Show raw output if no structured response
+    const rawWrap = document.createElement('div');
+    rawWrap.innerHTML = `
+      <div class="raw-label">Raw Output</div>
+      <div class="raw-block">${escapeHtml(data.raw_output)}</div>
+    `;
+    container.appendChild(rawWrap);
+  }
+
+  container.classList.add('active');
+}
+
+function renderError(model, message) {
+  const prefix = model === 'base' ? 'base' : 'ft';
+  document.getElementById(prefix + 'Loading').classList.remove('active');
+  document.getElementById(prefix + 'Time').textContent = '—';
+  finishProgress(prefix);
+  const container = document.getElementById(prefix + 'Result');
+  container.innerHTML = `<div class="error-block">⚠️ ${escapeHtml(message)}</div>`;
+  container.classList.add('active');
+}
+
+function toggleAccordion(el) {
+  el.classList.toggle('open');
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── MAIN COMPARISON LOGIC ─────────────────────────────────────────────────────
+
+async function callModel(model, numbers, target) {
+  const res = await fetch('/api/infer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, numbers, target })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+async function runComparison() {
+  const numbersRaw = document.getElementById('numbersInput').value;
+  const targetRaw = document.getElementById('targetInput').value;
+
+  const numbers = numbersRaw.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+  const target = parseInt(targetRaw.trim(), 10);
+
+  if (numbers.length !== 3 || isNaN(target)) {
+    alert('Please enter exactly 3 numbers and a valid target.');
+    return;
+  }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running…';
+
+  setLoading('base');
+  setLoading('ft');
+
+  // Call both models in parallel
+  const [baseResult, ftResult] = await Promise.allSettled([
+    callModel('base', numbers, target),
+    callModel('finetuned', numbers, target)
+  ]);
+
+  if (baseResult.status === 'fulfilled') {
+    renderResult('base', baseResult.value, numbers, target);
+  } else {
+    renderError('base', baseResult.reason?.message || 'Request failed');
+  }
+
+  if (ftResult.status === 'fulfilled') {
+    renderResult('ft', ftResult.value, numbers, target);
+  } else {
+    renderError('ft', ftResult.reason?.message || 'Request failed');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶  Run Comparison';
+}
+
+// Allow Enter key to trigger comparison
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('runBtn').disabled) {
+    runComparison();
+  }
+});
+</script>
+</body>
+</html>
