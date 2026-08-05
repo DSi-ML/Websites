@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RFT Math Expression — Model Comparison</title>
+  <style>
+    :root {
+      --bg: #05101f;
+      --surface: #0c1d35;
+      --surface2: #102040;
+      --border: #1a3558;
+      --base-accent: #3b82f6;
+      --ft-accent: #8b5cf6;
+      --correct: #22d26e;
+      --wrong: #f43f5e;
+      --text: #e2e8f0;
+      --muted: #7a92ae;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #050d1a 0%, #0c1d35 50%, #120830 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px 24px;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 6px;
+    }
+    .header-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--base-accent), var(--ft-accent));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #93c5fd, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-left: 56px;
+    }
+    .model-badges {
+      display: flex;
+      gap: 10px;
+      margin-left: 56px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    .badge-base { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .badge-ft   { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.3); }
+    .badge-tech { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── TAB BAR ── */
+    .tab-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      display: flex;
+      gap: 0;
+    }
+    .tab-btn {
+      padding: 14px 24px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--text);
+      border-bottom-color: var(--ft-accent);
+    }
+
+    /* ── TAB CONTENT ── */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── MAIN LAYOUT ── */
+    .main { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── INPUT CARD ── */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+    }
+    .input-card h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+    .input-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .input-group input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 180px;
+    }
+    .input-group input:focus { border-color: var(--ft-accent); }
+    .input-group input.wide { min-width: 260px; }
+
+    .run-btn {
+      padding: 11px 28px;
+      background: linear-gradient(135deg, var(--base-accent), var(--ft-accent));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .run-btn:hover  { opacity: 0.9; transform: translateY(-1px); }
+    .run-btn:active { transform: translateY(0); }
+    .run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .examples-row {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .examples-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .example-chip {
+      font-size: 11px;
+      padding: 5px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .example-chip:hover {
+      background: rgba(139,92,246,0.15);
+      border-color: rgba(139,92,246,0.4);
+    }
+
+    /* ── COMPARISON GRID ── */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ── MODEL PANEL ── */
+    .model-panel {
+      background: var(--surface);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-base .panel-header { background: rgba(59,130,246,0.07); }
+    .panel-ft   .panel-header { background: rgba(139,92,246,0.07); }
+
+    .panel-title { display: flex; align-items: center; gap: 10px; }
+    .panel-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .panel-base .panel-dot { background: var(--base-accent); box-shadow: 0 0 8px rgba(59,130,246,0.6); }
+    .panel-ft   .panel-dot { background: var(--ft-accent);   box-shadow: 0 0 8px rgba(139,92,246,0.6); }
+
+    .panel-name { font-size: 13px; font-weight: 700; }
+    .panel-subtitle { font-size: 11px; color: var(--muted); }
+    .panel-meta { display: flex; gap: 12px; align-items: center; }
+    .meta-chip { font-size: 11px; padding: 3px 8px; border-radius: 5px; font-weight: 600; }
+    .meta-time   { background: rgba(255,255,255,0.07); color: var(--muted); }
+    .meta-tokens { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+    .panel-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 280px;
+    }
+
+    /* ── IDLE STATE ── */
+    .idle-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .idle-icon { font-size: 36px; opacity: 0.3; }
+    .idle-text { font-size: 13px; }
+
+    /* ── LOADING STATE ── */
+    .loading-state {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .loading-state.active { display: flex; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--base-accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .panel-ft .spinner { border-top-color: var(--ft-accent); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .thinking-dots { display: flex; gap: 5px; align-items: center; }
+    .thinking-dots span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: dot-bounce 1.2s ease-in-out infinite;
+    }
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+      40% { transform: scale(1.1); opacity: 1; }
+    }
+    .loading-label { font-size: 13px; color: var(--muted); }
+
+    /* ── RESULT STATE ── */
+    .result-state { display: none; flex-direction: column; gap: 14px; }
+    .result-state.active { display: flex; }
+
+    /* Answer Block */
+    .answer-block {
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .answer-correct { background: rgba(34,210,110,0.1);  border: 1px solid rgba(34,210,110,0.3); }
+    .answer-wrong   { background: rgba(244,63,94,0.1);   border: 1px solid rgba(244,63,94,0.3); }
+    .answer-unknown { background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
+
+    .answer-icon { font-size: 26px; flex-shrink: 0; }
+    .answer-content { flex: 1; min-width: 0; }
+    .answer-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .answer-expr {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
+    }
+    .answer-correct .answer-expr { color: var(--correct); }
+    .answer-wrong   .answer-expr { color: var(--wrong); }
+    .answer-unknown .answer-expr { color: var(--text); }
+
+    .answer-eval { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .answer-verdict {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .verdict-correct { background: rgba(34,210,110,0.2);  color: var(--correct); }
+    .verdict-wrong   { background: rgba(244,63,94,0.2);   color: var(--wrong); }
+    .verdict-unknown { background: rgba(255,255,255,0.08); color: var(--muted); }
+
+    /* Think Accordion */
+    .think-accordion { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .think-header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .think-header:hover { background: rgba(255,255,255,0.06); }
+    .think-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--muted); }
+    .think-title-icon { font-size: 14px; }
+    .think-chevron { color: var(--muted); font-size: 12px; transition: transform 0.2s; }
+    .think-accordion.open .think-chevron { transform: rotate(180deg); }
+    .think-body {
+      display: none;
+      padding: 12px 14px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #94a3b8;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .think-accordion.open .think-body { display: block; }
+
+    /* Raw output fallback */
+    .raw-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .raw-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* Error */
+    .error-block {
+      background: rgba(244,63,94,0.08);
+      border: 1px solid rgba(244,63,94,0.25);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #fb7185;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 40px;
+      padding: 20px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-left { font-size: 12px; color: var(--muted); }
+    .footer-left strong { color: var(--text); }
+    .footer-right { display: flex; gap: 10px; flex-wrap: wrap; }
+    .footer-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .comparison-grid { grid-template-columns: 1fr; }
+      .main { padding: 20px 18px; }
+      .header { padding: 20px 18px 16px; }
+      .tab-bar { padding: 0 18px; }
+    }
+
+    /* ── ANIMATIONS ── */
+    .result-state.active { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* progress bar */
+    .progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+    .progress-bar { height: 100%; width: 0%; border-radius: 2px; transition: width 0.1s linear; }
+    .panel-base .progress-bar { background: var(--base-accent); }
+    .panel-ft   .progress-bar { background: var(--ft-accent); }
+
+    /* ── FORMULA TAB ── */
+    .formula-page { max-width: 860px; margin: 0 auto; padding: 40px; }
+    .formula-page h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #93c5fd, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .formula-page .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+    .formula-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 36px;
+      overflow-x: auto;
+    }
+    .formula-box .katex { font-size: 1.15em; }
+    .formula-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .components-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    @media (max-width: 700px) { .components-grid { grid-template-columns: 1fr; } }
+
+    .component-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .component-card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #c4b5fd;
+      font-family: 'Courier New', monospace;
+    }
+    .component-card p {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.65;
+    }
+    .component-card .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(139,92,246,0.15);
+      color: #c4b5fd;
+      border: 1px solid rgba(139,92,246,0.25);
+      margin-bottom: 8px;
+    }
+
+    .intuition-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--ft-accent);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .intuition-block h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .intuition-block p {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.7;
+    }
+
+    .steps-list {
+      list-style: none;
+      counter-reset: steps;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+    .steps-list li {
+      counter-increment: steps;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+    .steps-list li::before {
+      content: counter(steps);
+      font-size: 11px;
+      font-weight: 700;
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 50%;
+      background: rgba(139,92,246,0.2);
+      color: #c4b5fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .steps-list li span { font-size: 13px; color: #94a3b8; line-height: 1.6; }
+    .steps-list li strong { color: var(--text); }
+
+    /* ── FAQ TAB ── */
+    .faq-page { max-width: 820px; margin: 0 auto; padding: 40px; }
+    .faq-page h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #93c5fd, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .faq-page .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+
+    .faq-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+      gap: 14px;
+    }
+    .faq-question:hover { background: rgba(255,255,255,0.03); }
+    .faq-q-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .faq-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ft-accent);
+      min-width: 22px;
+      opacity: 0.7;
+    }
+    .faq-chevron {
+      color: var(--muted);
+      font-size: 12px;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-answer {
+      display: none;
+      padding: 0 20px 18px 56px;
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.75;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .faq-item.open .faq-answer { display: block; }
+    .faq-answer code {
+      background: rgba(255,255,255,0.07);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #c4b5fd;
+    }
+    .faq-answer strong { color: var(--text); }
+
+    /* ── HISTORY TAB ── */
+    .history-page { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+    @media (max-width: 900px) { .history-page { padding: 20px 18px; } }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .history-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #93c5fd, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .history-header .subtitle { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .clear-btn {
+      padding: 7px 16px;
+      background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.3);
+      border-radius: 7px;
+      color: #fb7185;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .clear-btn:hover { background: rgba(244,63,94,0.2); }
+
+    .history-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .history-empty .empty-icon { font-size: 40px; opacity: 0.3; margin-bottom: 12px; }
+    .history-empty p { font-size: 13px; }
+
+    /* History table */
+    .history-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    .history-table thead th {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0 14px 6px;
+      text-align: left;
+    }
+    .history-table thead th.center { text-align: center; }
+    .history-row td {
+      background: var(--surface);
+      padding: 14px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .history-row td:first-child {
+      border-left: 1px solid var(--border);
+      border-radius: 10px 0 0 10px;
+      padding-left: 18px;
+    }
+    .history-row td:last-child {
+      border-right: 1px solid var(--border);
+      border-radius: 0 10px 10px 0;
+      padding-right: 18px;
+    }
+    .history-row:hover td { background: var(--surface2); }
+
+    .run-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .problem-cell { white-space: nowrap; }
+    .problem-nums {
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: var(--text);
+    }
+    .problem-arrow { font-size: 13px; color: var(--muted); margin: 0 4px; }
+    .problem-target {
+      font-size: 15px;
+      font-weight: 800;
+      font-family: 'Courier New', monospace;
+      color: #c4b5fd;
+    }
+    .expr-cell { text-align: center; }
+    .expr-val {
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+    .expr-none { font-size: 12px; color: var(--muted); font-style: italic; }
+    .verdict-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      margin-top: 4px;
+    }
+    .pill-correct { background: rgba(34,210,110,0.15); color: var(--correct); border: 1px solid rgba(34,210,110,0.3); }
+    .pill-wrong   { background: rgba(244,63,94,0.12);  color: var(--wrong);   border: 1px solid rgba(244,63,94,0.3); }
+    .pill-error   { background: rgba(255,255,255,0.05); color: var(--muted);   border: 1px solid var(--border); }
+
+    .divider-col { width: 1px; padding: 0 4px !important; border: none !important; background: transparent !important; }
+    .divider-col::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 100%;
+      background: var(--border);
+      margin: 0 auto;
+    }
+    .time-cell {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      text-align: right;
+    }
+    .summary-bar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .summary-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .summary-stat .s-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .summary-stat .s-value { font-size: 20px; font-weight: 700; }
+    .s-base  .s-value { color: var(--base-accent); }
+    .s-ft    .s-value { color: var(--ft-accent); }
+    .s-total .s-value { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-icon">🧮</div>
+    <h1>RFT Math Expression — Model Comparison</h1>
+  </div>
+  <p>GRPO Reinforcement Fine-Tuning · Live side-by-side inference · Qwen2.5-3B</p>
+  <div class="model-badges">
+    <span class="badge badge-base">⬡ Base Model</span>
+    <span class="badge badge-ft">★ Fine-Tuned (GRPO)</span>
+    <span class="badge badge-tech">RunPod Serverless</span>
+    <span class="badge badge-tech">Qwen2.5-3B-Instruct</span>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('comparison', this)">⚡ Comparison</button>
+  <button class="tab-btn" onclick="showTab('formula', this)">∑ GRPO Formula</button>
+  <button class="tab-btn" onclick="showTab('faq', this)">💬 FAQ</button>
+  <button class="tab-btn" onclick="showTab('history', this)" id="historyTabBtn">🕓 History <span id="historyCount" style="display:none;background:rgba(139,92,246,0.25);color:#c4b5fd;font-size:10px;padding:1px 7px;border-radius:10px;margin-left:4px;">0</span></button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TAB 1 — COMPARISON
+══════════════════════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-comparison">
+<div class="main">
+
+  <!-- INPUT CARD -->
+  <div class="input-card">
+    <h2>Enter a Problem</h2>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Numbers (3, comma-separated)</label>
+        <input type="text" id="numbersInput" class="wide" placeholder="e.g.  6, 2, 7" value="6, 2, 7" />
+      </div>
+      <div class="input-group">
+        <label>Target Number</label>
+        <input type="number" id="targetInput" placeholder="e.g.  5" value="5" />
+      </div>
+      <button class="run-btn" id="runBtn" onclick="runComparison()">
+        ▶ &nbsp;Run Comparison
+      </button>
+    </div>
+
+    <div class="examples-row">
+      <span class="examples-label">Quick example:</span>
+      <!-- <span class="example-chip" onclick="setExample([6,2,7], 5)">6, 2, 7 → 5</span>
+      <span class="example-chip" onclick="setExample([8,5,9], 31)">8, 5, 9 → 31</span>
+      <span class="example-chip" onclick="setExample([6,2,7], 19)">6, 2, 7 → 19</span> -->
+      <span class="example-chip" onclick="setExample([1,8,9], 17)">1, 8, 9 → 17</span>
+    </div>
+  </div>
+
+  <!-- COMPARISON GRID -->
+  <div class="comparison-grid">
+
+    <!-- BASE MODEL PANEL -->
+    <div class="model-panel panel-base" id="basePanel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-dot"></div>
+          <div>
+            <div class="panel-name">Base Model</div>
+            <div class="panel-subtitle">Qwen/Qwen2.5-3B-Instruct</div>
+          </div>
+        </div>
+        <div class="panel-meta">
+          <span class="meta-chip meta-time" id="baseTime">—</span>
+          <span class="meta-chip meta-tokens" id="baseTokens">—</span>
+        </div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="baseProgress"></div></div>
+      <div class="panel-body">
+        <div class="idle-state" id="baseIdle">
+          <div class="idle-icon">○</div>
+          <div class="idle-text">Waiting for input…</div>
+        </div>
+        <div class="loading-state" id="baseLoading">
+          <div class="spinner"></div>
+          <div class="thinking-dots"><span></span><span></span><span></span></div>
+          <div class="loading-label" id="baseLoadingLabel">Calling base model…</div>
+        </div>
+        <div class="result-state" id="baseResult"></div>
+      </div>
+    </div>
+
+    <!-- FINE-TUNED PANEL -->
+    <div class="model-panel panel-ft" id="ftPanel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-dot"></div>
+          <div>
+            <div class="panel-name">Fine-Tuned Model</div>
+            <div class="panel-subtitle">Qwen2.5-3B · GRPO RFT · 2 epochs</div>
+          </div>
+        </div>
+        <div class="panel-meta">
+          <span class="meta-chip meta-time" id="ftTime">—</span>
+          <span class="meta-chip meta-tokens" id="ftTokens">—</span>
+        </div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="ftProgress"></div></div>
+      <div class="panel-body">
+        <div class="idle-state" id="ftIdle">
+          <div class="idle-icon">★</div>
+          <div class="idle-text">Waiting for input…</div>
+        </div>
+        <div class="loading-state" id="ftLoading">
+          <div class="spinner"></div>
+          <div class="thinking-dots"><span></span><span></span><span></span></div>
+          <div class="loading-label" id="ftLoadingLabel">Calling fine-tuned model…</div>
+        </div>
+        <div class="result-state" id="ftResult"></div>
+      </div>
+    </div>
+
+  </div><!-- /comparison-grid -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">
+      <strong>GRPO Reinforcement Fine-Tuning POC</strong> · Math Expressions · 500-sample dataset
+    </div>
+    <div class="footer-right">
+      <span class="footer-tag">GRPO</span>
+      <span class="footer-tag">Qwen2.5-3B</span>     
+      <span class="footer-tag">Vercel</span>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /tab-comparison -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     TAB 2 — GRPO FORMULA
+══════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-formula">
+<div class="formula-page">
+
+  <h2>GRPO Objective Function</h2>
+  <p class="subtitle">Group Relative Policy Optimization — the RL algorithm used to fine-tune this model</p>
+
+  <!-- Formula box -->
+  <div class="formula-box">
+    <div class="formula-label">GRPO Clipped Surrogate Objective</div>
+    <img src="grpo_formula.png" alt="GRPO Formula" style="max-width:100%; border-radius:8px; mix-blend-mode:lighten;" />
+  </div>
+
+  <!-- High-level intuition -->
+  <div class="intuition-block">
+    <h3>What does this formula do in plain English?</h3>
+    <p>
+      For each question <em>q</em>, GRPO samples a <strong>group of G responses</strong> from the current model.
+      Each response gets a reward (e.g. correctness). The advantage <strong>Â</strong> of each response is its reward
+      <strong>minus the group average</strong> — so the model learns "this response was better (or worse) than the pack."
+      The clipping term prevents any single update from being too large, keeping training stable.
+      No critic network is needed — the group itself acts as the baseline.
+    </p>
+  </div>
+
+  <!-- Component breakdown -->
+  <div class="components-grid">
+    <div class="component-card">
+      <span class="tag">Sampling</span>
+      <h4>G &nbsp;·&nbsp; Group Size</h4>
+      <p>Number of independent responses sampled per prompt. Larger G gives a better reward baseline but costs more memory. Typical values: 4–16. This project used <strong>G = 8</strong>.</p>
+    </div>
+    <div class="component-card">
+      <span class="tag">Policy Ratio</span>
+      <h4>π<sub>θ</sub> / π<sub>θ<sub>old</sub></sub></h4>
+      <p>Ratio of the new policy probability to the old policy probability for each token. Values &gt; 1 mean the new policy assigns higher probability to this token than before the update.</p>
+    </div>
+    <div class="component-card">
+      <span class="tag">Advantage</span>
+      <h4>Â<sub>i,t</sub> — Relative Advantage</h4>
+      <p>Reward of response <em>i</em> minus the mean reward across the G group: <code>Â = r_i − mean(r₁…r_G)</code>. Positive means this response was better than average; negative means worse.</p>
+    </div>
+    <div class="component-card">
+      <span class="tag">Stability</span>
+      <h4>clip(·, 1−ε, 1+ε)</h4>
+      <p>Clips the policy ratio to the range [1−ε, 1+ε]. Prevents excessively large gradient steps. Default ε = 0.2, meaning the ratio stays within ±20% of 1.</p>
+    </div>
+    <div class="component-card">
+      <span class="tag">Conservative Update</span>
+      <h4>min(unclipped, clipped) · Â</h4>
+      <p>Taking the <strong>minimum</strong> of the clipped and unclipped objectives creates a pessimistic bound. The policy can only benefit from a large ratio if the advantage is positive and the ratio is within the clip range.</p>
+    </div>
+    <div class="component-card">
+      <span class="tag">KL Regularisation</span>
+      <h4>β · KL(π<sub>θ</sub> ‖ π<sub>ref</sub>)</h4>
+      <p>An additional penalty (subtracted from the reward before computing advantages) that keeps the policy close to a frozen reference model. Prevents reward hacking. This project used <strong>β = 0.004</strong>.</p>
+    </div>
+  </div>
+
+  <!-- How it works step by step -->
+  <div class="intuition-block">
+    <h3>Why GRPO instead of PPO?</h3>
+    <p>
+      PPO requires a <strong>separate critic (value) network</strong> to estimate baselines, roughly doubling GPU memory.
+      GRPO replaces the critic with a <strong>group baseline</strong>: the average reward of G rollouts.
+      This makes GRPO far more memory-efficient, enabling fine-tuning of large models on a single GPU —
+      exactly the setup used here with Qwen2.5-3B on a single A100.
+    </p>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text)">How one training step works</h3>
+  <ol class="steps-list">
+    <li><span><strong>Sample G responses</strong> — for each training prompt, generate G completions with temperature &gt; 0 to ensure diversity (this project used temperature 0.8, G = 8).</span></li>
+    <li><span><strong>Score with reward function</strong> — each completion receives a scalar reward. Here: 1.0 if the arithmetic expression is numerically correct and uses exactly the given numbers, else 0.0.</span></li>
+    <li><span><strong>Compute group advantage</strong> — subtract the group mean reward from each individual reward: <code>Â_i = r_i − mean(r₁…r_G)</code>. Optionally normalise by the group standard deviation.</span></li>
+    <li><span><strong>Compute policy ratios</strong> — for every token in every response, compute <code>π_θ / π_θ_old</code> using log-probabilities already stored from sampling.</span></li>
+    <li><span><strong>Apply clipped surrogate objective</strong> — take the element-wise min of the clipped and unclipped ratio times advantage, then average over tokens and responses.</span></li>
+    <li><span><strong>Subtract KL penalty</strong> — measure divergence from a frozen reference model and subtract <code>β · KL</code> from the objective to prevent the policy drifting too far.</span></li>
+    <li><span><strong>Backpropagate and update</strong> — standard gradient ascent (maximising the objective) via AdamW with gradient accumulation.</span></li>
+  </ol>
+
+</div><!-- /formula-page -->
+</div><!-- /tab-formula -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     TAB 3 — FAQ
+══════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-faq">
+<div class="faq-page">
+
+  <h2>Frequently Asked Questions</h2>
+  <p class="subtitle">Common questions about Reinforcement Fine-Tuning (RFT) and GRPO — click any question to expand</p>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">01</span>
+      <span class="faq-q-text">What is Reinforcement Fine-Tuning (RFT)?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      RFT is a training paradigm where a language model is improved using <strong>reinforcement learning (RL) signals</strong> rather than pure supervised labels. Instead of showing the model the "correct" answer and minimising cross-entropy loss, you let the model generate its own answers and then reward or penalise them based on a reward function. Over many steps, the model learns to produce outputs that score higher on the reward — without ever needing ground-truth completions.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">02</span>
+      <span class="faq-q-text">What is GRPO and how does it differ from PPO?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      <strong>GRPO (Group Relative Policy Optimisation)</strong> is an RL algorithm introduced with DeepSeek-R1 that replaces the PPO critic network with a <em>group baseline</em>. In PPO you need a separate value model (≈ same size as the policy) to estimate expected return. In GRPO you instead sample G completions per prompt and use their <strong>average reward as the baseline</strong>. This eliminates the critic entirely, cutting memory roughly in half while achieving comparable or better results on reasoning tasks.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">03</span>
+      <span class="faq-q-text">Why use GRPO instead of supervised fine-tuning (SFT)?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      SFT requires <strong>labelled gold answers</strong> for every training example. For tasks like arithmetic, these are easy to generate — but for complex reasoning, code generation, or creative tasks, high-quality gold answers are expensive to produce. GRPO only needs a <strong>verifiable reward signal</strong> (e.g. "does this expression evaluate to the target?"), which can be fully automated. It also encourages the model to discover novel solution paths rather than memorising training examples.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">04</span>
+      <span class="faq-q-text">What is a reward function and how do you design one?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      A reward function takes a model completion and returns a scalar score. Good reward functions are <strong>verifiable</strong> (not subjective), <strong>binary or sparse</strong> (correct = 1, else 0 works well), and <strong>not gameable</strong>. In this project the reward returns <code>1.0</code> if the expression: (a) uses exactly the three given numbers once each, and (b) evaluates to the target. Avoid using soft rewards like string overlap — they tend to reward superficial formatting rather than actual correctness.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">05</span>
+      <span class="faq-q-text">What does the clipping parameter ε do?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      The clip range <code>[1−ε, 1+ε]</code> limits how much the probability ratio between the new and old policy can change in a single update. With the default <code>ε = 0.2</code>, the ratio is capped at ±20%. This prevents <strong>catastrophic policy collapse</strong> — where one lucky or unlucky gradient step destroys the model's language abilities. It's the key stability mechanism borrowed from PPO. Smaller ε = more conservative updates; larger ε = faster but riskier learning.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">06</span>
+      <span class="faq-q-text">What is the advantage estimate Â and how is it computed in GRPO?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      In GRPO, the advantage for response <em>i</em> is: <strong><code>Â_i = r_i − mean(r₁…r_G)</code></strong>, optionally divided by the group standard deviation. Every token in a correct response gets a positive advantage (the model is encouraged to make those tokens more probable), and every token in an incorrect response gets a negative advantage (those tokens are suppressed). The advantage is broadcast uniformly across all tokens in the response — GRPO does not assign per-token credit.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">07</span>
+      <span class="faq-q-text">What is the KL penalty (β) and why does it matter?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      The KL penalty subtracts <code>β × KL(π_θ ‖ π_ref)</code> from each reward before computing advantages, where <code>π_ref</code> is a frozen copy of the initial model. This prevents <strong>reward hacking</strong> — where the model finds degenerate outputs that score high on the reward but are incoherent as language. A very small β (e.g. 0.004 as used here) barely constrains the model; a large β (e.g. 0.1) keeps it close to the original distribution. If you see repetitive or incoherent outputs, try increasing β.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">08</span>
+      <span class="faq-q-text">How many group samples (G) should I use per prompt?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      Larger G gives a <strong>lower-variance baseline</strong> (better signal), but costs G× more GPU compute per step. For a 3B model on a single A100, G = 8 is a good default. If your reward is very sparse (e.g. correctness rate &lt; 5%), consider increasing G so that at least one sample in the group is usually correct — otherwise every response has the same reward and gradients vanish (<em>zero-advantage problem</em>). If GPU memory is tight, reduce G and compensate with more gradient accumulation steps.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">09</span>
+      <span class="faq-q-text">What does frac_reward_zero_std mean in the training logs?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      <code>frac_reward_zero_std</code> is the fraction of prompts where <strong>all G responses received the same reward</strong> (standard deviation = 0). When this happens, advantages are all zero and the gradient update is a no-op. High values (above ~30%) indicate the task is either too easy (all correct) or too hard (all wrong) for the current model. If too high, try harder prompts (too easy) or reduce the task difficulty / increase G (too hard).
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">10</span>
+      <span class="faq-q-text">Why use temperature > 0 during GRPO training rollouts?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      Temperature controls the <strong>diversity of the G rollouts</strong>. With temperature = 0 (greedy), all G responses would be identical — there's no variance, so advantages are all zero and nothing is learned. A temperature of 0.7–0.9 introduces enough diversity that some responses succeed and others fail, creating a useful learning signal. Note: this is a <em>training</em> hyperparameter. At <em>inference</em> time you should use temperature = 0 (greedy) for best accuracy on arithmetic tasks.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">11</span>
+      <span class="faq-q-text">My model scores high during training but fails at inference — why?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      The most common cause is a <strong>prompt format mismatch</strong>. GRPO trains with a specific system prompt, user message format, and often an assistant prefill (e.g. <code>&lt;think&gt;</code>). If inference uses a different format, the model doesn't see the pattern it was trained on. Always use the <strong>exact same prompt template</strong> at inference. The second most common cause is <strong>temperature at inference</strong>: if you trained with greedy evaluation but your deployment uses sampling (temperature &gt; 0), a small 3B model will make arithmetic errors.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">12</span>
+      <span class="faq-q-text">What is the difference between the LoRA adapter and a merged model?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      <strong>LoRA adapter</strong>: a small set of low-rank weight matrices (a few hundred MB) stored separately from the base model. Loaded via <code>PeftModel.from_pretrained(base, adapter_path)</code> at inference. <strong>Merged model</strong>: the adapter weights are mathematically folded into the base model weights via <code>merge_and_unload()</code>, producing a single standalone model. Merged models are easier to deploy (no PEFT library needed) and are slightly faster, but produce <em>identical outputs</em> to the adapter version when loaded with the same dtype and decoding settings.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">13</span>
+      <span class="faq-q-text">How do I know if GRPO training is actually working?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      Watch these metrics in order of importance: (1) <code>rewards/accuracy_reward/mean</code> — should trend upward over training. (2) <code>frac_reward_zero_std</code> — should stay below ~40%. (3) <code>kl</code> — should be small and stable (not exploding). (4) <code>entropy</code> — should decrease gradually (model becomes more confident). (5) <code>grad_norm</code> — large spikes indicate instability; consider clipping. If reward is flat and zero_std is high, the task is too hard for the model or your reward function has a bug.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">14</span>
+      <span class="faq-q-text">Does adding a format reward (like requiring &lt;think&gt; tags) help?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      For small models (&lt; 7B), <strong>mixing format and correctness rewards is often counterproductive</strong>. The model may learn to produce the right tags without solving the problem, or vice versa. The approach that works best (and was used here) is a <strong>single correctness reward</strong>: 1 if correct, 0 otherwise. The model naturally develops a reasoning format when the correctness signal is strong enough. Format rewards become more useful at 7B+ scale where the model has enough capacity to learn both simultaneously.
+    </div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-question">
+      <span class="faq-num">15</span>
+      <span class="faq-q-text">How much data do you need for GRPO fine-tuning?</span>
+      <span class="faq-chevron">▾</span>
+    </div>
+    <div class="faq-answer">
+      Surprisingly little. This project used only <strong>400 training examples</strong> (from a 500-sample dataset, 80/20 split) and achieved a 50 percentage-point improvement over the base model in 2 epochs. GRPO is data-efficient because each prompt generates G rollouts — effectively 400 × 8 = 3,200 learning signal samples per epoch. The key is that the task must be <strong>verifiable</strong> (binary reward works) and the base model must already have some relevant capability that RL can amplify. GRPO won't teach a model something it has no prior knowledge of.
+    </div>
+  </div>
+
+</div><!-- /faq-page -->
+</div><!-- /tab-faq -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     TAB 4 — HISTORY
+══════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-history">
+<div class="history-page">
+
+  <div class="history-header">
+    <div>
+      <h2>Run History</h2>
+      <div class="subtitle">Every comparison you've run this session, side by side</div>
+    </div>
+    <button class="clear-btn" onclick="clearHistory()">✕ Clear History</button>
+  </div>
+
+  <!-- Live summary bar -->
+  <div class="summary-bar" id="historySummary" style="display:none;">
+    <div class="summary-stat s-total">
+      <span class="s-label">Total Runs</span>
+      <span class="s-value" id="sTotalRuns">0</span>
+    </div>
+    <div class="summary-stat s-base">
+      <span class="s-label">Base Correct</span>
+      <span class="s-value" id="sBaseCorrect">0 / 0</span>
+    </div>
+    <div class="summary-stat s-ft">
+      <span class="s-label">Fine-Tuned Correct</span>
+      <span class="s-value" id="sFtCorrect">0 / 0</span>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="history-empty" id="historyEmpty">
+    <div class="empty-icon">🕓</div>
+    <p>No runs yet — go to the Comparison tab and run a problem.</p>
+  </div>
+
+  <!-- History table -->
+  <table class="history-table" id="historyTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Problem</th>
+        <th class="center">Base Model</th>
+        <th class="center">Fine-Tuned Model</th>
+        <th style="text-align:right;">Time</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody"></tbody>
+  </table>
+
+</div>
+</div><!-- /tab-history -->
+
+
+<script>
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────────
+const runHistory = [];
+
+function addToHistory(numbers, target, baseData, ftData, baseErr, ftErr) {
+  const baseOut  = baseErr ? null : parseResponse(baseData.raw_output || '');
+  const ftOut    = ftErr   ? null : parseResponse(ftData.raw_output   || '');
+  const baseChk  = (!baseErr && baseOut?.answer) ? checkCorrect(baseOut.answer, numbers, target) : { correct: false };
+  const ftChk    = (!ftErr   && ftOut?.answer)   ? checkCorrect(ftOut.answer,   numbers, target) : { correct: false };
+
+  runHistory.unshift({
+    num:      runHistory.length + 1,
+    numbers, target,
+    base:  { answer: baseOut?.answer ?? null, correct: baseChk.correct, result: baseChk.result, time: baseData?.inference_time_ms, error: baseErr },
+    ft:    { answer: ftOut?.answer   ?? null, correct: ftChk.correct,   result: ftChk.result,   time: ftData?.inference_time_ms,   error: ftErr   },
+    ts:    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+
+  // Re-number after unshift
+  runHistory.forEach((r, i) => r.num = runHistory.length - i);
+
+  renderHistory();
+  updateHistoryBadge();
+}
+
+function renderHistory() {
+  const empty   = document.getElementById('historyEmpty');
+  const table   = document.getElementById('historyTable');
+  const summary = document.getElementById('historySummary');
+  const tbody   = document.getElementById('historyBody');
+
+  if (runHistory.length === 0) {
+    empty.style.display   = '';
+    table.style.display   = 'none';
+    summary.style.display = 'none';
+    return;
+  }
+
+  empty.style.display   = 'none';
+  table.style.display   = '';
+  summary.style.display = '';
+
+  // Summary counts
+  const total      = runHistory.length;
+  const baseOk     = runHistory.filter(r => r.base.correct).length;
+  const ftOk       = runHistory.filter(r => r.ft.correct).length;
+  document.getElementById('sTotalRuns').textContent    = total;
+  document.getElementById('sBaseCorrect').textContent  = `${baseOk} / ${total}`;
+  document.getElementById('sFtCorrect').textContent    = `${ftOk} / ${total}`;
+
+  // Table rows
+  tbody.innerHTML = runHistory.map(r => `
+    <tr class="history-row">
+      <td><span class="run-num">#${r.num}</span></td>
+      <td class="problem-cell">
+        <span class="problem-nums">[${r.numbers.join(', ')}]</span>
+        <span class="problem-arrow">→</span>
+        <span class="problem-target">${r.target}</span>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">${r.ts}</div>
+      </td>
+      <td class="expr-cell">${renderHistoryCell(r.base)}</td>
+      <td class="expr-cell">${renderHistoryCell(r.ft)}</td>
+      <td class="time-cell">
+        ${r.base.time !== undefined ? (r.base.time/1000).toFixed(1)+'s' : '—'}<br>
+        <span style="color:var(--ft-accent)">${r.ft.time !== undefined ? (r.ft.time/1000).toFixed(1)+'s' : '—'}</span>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderHistoryCell(side) {
+  if (side.error) {
+    return `<span class="expr-none">error</span><br><span class="verdict-pill pill-error">ERROR</span>`;
+  }
+  if (!side.answer) {
+    return `<span class="expr-none">no answer</span><br><span class="verdict-pill pill-error">—</span>`;
+  }
+  const color = side.correct ? 'var(--correct)' : 'var(--wrong)';
+  const pill  = side.correct
+    ? '<span class="verdict-pill pill-correct">CORRECT</span>'
+    : '<span class="verdict-pill pill-wrong">WRONG</span>';
+  const evalLine = side.result !== undefined
+    ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;">= ${side.result}</div>`
+    : '';
+  return `<span class="expr-val" style="color:${color}">${escapeHtml(side.answer)}</span>${evalLine}<br>${pill}`;
+}
+
+function updateHistoryBadge() {
+  const badge = document.getElementById('historyCount');
+  badge.textContent    = runHistory.length;
+  badge.style.display  = runHistory.length > 0 ? 'inline-block' : 'none';
+}
+
+function clearHistory() {
+  runHistory.length = 0;
+  renderHistory();
+  updateHistoryBadge();
+}
+
+// ── FAQ ACCORDION ─────────────────────────────────────────────────────────────
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function setExample(nums, target) {
+  document.getElementById('numbersInput').value = nums.join(', ');
+  document.getElementById('targetInput').value = target;
+}
+
+// Simple recursive-descent parser for + - * ( ) — no eval, no Function()
+function safeEval(expr) {
+  const src = expr.replace(/\s+/g, '');
+  const tokens = [];
+  let i = 0;
+  while (i < src.length) {
+    const m = src.slice(i).match(/^(\d+|[+\-*()])/);
+    if (!m) return null;
+    tokens.push(m[1]);
+    i += m[1].length;
+  }
+  let pos = 0;
+  const peek    = () => tokens[pos];
+  const consume = () => tokens[pos++];
+
+  function parseExpr() {
+    let left = parseTerm();
+    while (peek() === '+' || peek() === '-') {
+      const op = consume();
+      const right = parseTerm();
+      left = op === '+' ? left + right : left - right;
+    }
+    return left;
+  }
+  function parseTerm() {
+    let left = parseFactor();
+    while (peek() === '*') { consume(); left *= parseFactor(); }
+    return left;
+  }
+  function parseFactor() {
+    const tok = peek();
+    if (tok === '(')  { consume(); const v = parseExpr(); consume(); return v; }
+    if (/^\d+$/.test(tok)) { consume(); return parseInt(tok, 10); }
+    if (tok === '-')  { consume(); return -parseFactor(); }
+    throw new Error('unexpected: ' + tok);
+  }
+
+  try {
+    const val = parseExpr();
+    return pos === tokens.length ? val : null;
+  } catch { return null; }
+}
+
+// Extract digit groups from expression as absolute values (handles negatives like -1*-2*-3)
+function extractAbsNumbers(expr) {
+  return (expr.match(/\d+/g) || []).map(Number).sort((a, b) => a - b);
+}
+
+function parseResponse(rawOutput) {
+  let thinking = null, answer = null;
+  const thinkMatch  = rawOutput.match(/<think>([\s\S]*?)<\/think>/i);
+  if (thinkMatch) thinking = thinkMatch[1].trim();
+  const answerMatch = rawOutput.match(/<answer>([\s\S]*?)<\/answer>/i);
+  if (answerMatch) {
+    answer = answerMatch[1].trim();
+  } else {
+    const eqMatch = rawOutput.match(/([0-9][0-9+\-*/()\s]{1,60}?)\s*=/);
+    if (eqMatch) answer = eqMatch[1].trim();
+  }
+  return { thinking, answer };
+}
+
+function checkCorrect(answer, inputNumbers, target) {
+  if (!answer) return { correct: false };
+
+  // Compare absolute values of numbers in expression to absolute values of inputs.
+  // This correctly handles negative inputs like [-1, -2, -3] and expressions like -1*-2*-3.
+  const usedAbs    = extractAbsNumbers(answer);
+  const expectedAbs = [...inputNumbers].map(n => Math.abs(Number(n))).sort((a, b) => a - b);
+  if (JSON.stringify(usedAbs) !== JSON.stringify(expectedAbs)) {
+    return { correct: false, reason: 'wrong numbers' };
+  }
+
+  const result  = safeEval(answer);
+  if (result === null) return { correct: false, reason: 'invalid expr' };
+  const correct = Math.abs(result - target) < 1e-6;
+  return { correct, result };
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function setLoading(model) {
+  const p = model === 'base' ? 'base' : 'ft';
+  document.getElementById(p + 'Idle').style.display = 'none';
+  document.getElementById(p + 'Loading').classList.add('active');
+  document.getElementById(p + 'Result').classList.remove('active');
+  document.getElementById(p + 'Result').innerHTML = '';
+  document.getElementById(p + 'Time').textContent   = '…';
+  document.getElementById(p + 'Tokens').textContent = '…';
+  animateProgress(p);
+}
+
+function animateProgress(p) {
+  const bar = document.getElementById(p + 'Progress');
+  bar.style.width = '0%';
+  let pct = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(pct + (100 - pct) * 0.04, 92);
+    bar.style.width = pct + '%';
+  }, 200);
+  bar._interval = iv;
+}
+
+function finishProgress(p) {
+  const bar = document.getElementById(p + 'Progress');
+  clearInterval(bar._interval);
+  bar.style.width = '100%';
+  setTimeout(() => { bar.style.width = '0%'; }, 800);
+}
+
+function renderResult(model, data, inputNumbers, target) {
+  const p = model === 'base' ? 'base' : 'ft';
+  document.getElementById(p + 'Loading').classList.remove('active');
+  document.getElementById(p + 'Time').textContent =
+    data.inference_time_ms !== undefined
+      ? (data.inference_time_ms / 1000).toFixed(2) + 's'
+      : '—';
+  if (data.token_count) {
+    document.getElementById(p + 'Tokens').textContent = data.token_count + ' tok';
+  }
+  finishProgress(p);
+
+  const container = document.getElementById(p + 'Result');
+  container.innerHTML = '';
+
+  if (data.error) {
+    container.innerHTML = `<div class="error-block">⚠️ ${escapeHtml(data.error)}</div>`;
+    container.classList.add('active');
+    return;
+  }
+
+  const { thinking, answer } = parseResponse(data.raw_output || '');
+  const check = answer ? checkCorrect(answer, inputNumbers, target) : { correct: false };
+
+  const blockClass  = answer ? (check.correct ? 'answer-correct' : 'answer-wrong') : 'answer-unknown';
+  const icon        = answer ? (check.correct ? '✅' : '❌') : '❓';
+  const verdictClass = answer ? (check.correct ? 'verdict-correct' : 'verdict-wrong') : 'verdict-unknown';
+  const verdictText  = answer ? (check.correct ? 'CORRECT' : 'WRONG') : 'NO ANSWER';
+  const evalText     = check.result !== undefined
+    ? `= ${check.result} (target: ${target})`
+    : (answer ? `target: ${target}` : '');
+
+  const answerBlock = document.createElement('div');
+  answerBlock.className = 'answer-block ' + blockClass;
+  answerBlock.innerHTML = `
+    <div class="answer-icon">${icon}</div>
+    <div class="answer-content">
+      <div class="answer-label">Expression</div>
+      <div class="answer-expr">${answer ? escapeHtml(answer) : '(none found)'}</div>
+      ${evalText ? `<div class="answer-eval">${escapeHtml(evalText)}</div>` : ''}
+    </div>
+    <div class="answer-verdict ${verdictClass}">${verdictText}</div>
+  `;
+  container.appendChild(answerBlock);
+
+  if (thinking) {
+    const acc = document.createElement('div');
+    acc.className = 'think-accordion';
+    acc.innerHTML = `
+      <div class="think-header" onclick="toggleAccordion(this.parentElement)">
+        <div class="think-title">
+          <span class="think-title-icon">💭</span>
+          <span>Model Reasoning (Chain of Thought)</span>
+        </div>
+        <span class="think-chevron">▾</span>
+      </div>
+      <div class="think-body">${escapeHtml(thinking)}</div>
+    `;
+    container.appendChild(acc);
+  } else if (data.raw_output && !answer) {
+    const rawWrap = document.createElement('div');
+    rawWrap.innerHTML = `
+      <div class="raw-label">Raw Output</div>
+      <div class="raw-block">${escapeHtml(data.raw_output)}</div>
+    `;
+    container.appendChild(rawWrap);
+  }
+
+  container.classList.add('active');
+}
+
+function renderError(model, message) {
+  const p = model === 'base' ? 'base' : 'ft';
+  document.getElementById(p + 'Loading').classList.remove('active');
+  document.getElementById(p + 'Time').textContent = '—';
+  finishProgress(p);
+  const container = document.getElementById(p + 'Result');
+  container.innerHTML = `<div class="error-block">⚠️ ${escapeHtml(message)}</div>`;
+  container.classList.add('active');
+}
+
+function toggleAccordion(el) { el.classList.toggle('open'); }
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── MAIN COMPARISON LOGIC ─────────────────────────────────────────────────────
+async function callModel(model, numbers, target) {
+  const res = await fetch('/api/infer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, numbers, target })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+async function runComparison() {
+  const numbersRaw = document.getElementById('numbersInput').value;
+  const targetRaw  = document.getElementById('targetInput').value;
+
+  const numbers = numbersRaw.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+  const target  = parseInt(targetRaw.trim(), 10);
+
+  if (numbers.length !== 3 || isNaN(target)) {
+    alert('Please enter exactly 3 numbers and a valid target.');
+    return;
+  }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Running…';
+
+  setLoading('base');
+  setLoading('ft');
+
+  const [baseResult, ftResult] = await Promise.allSettled([
+    callModel('base',      numbers, target),
+    callModel('finetuned', numbers, target)
+  ]);
+
+  const baseOk  = baseResult.status === 'fulfilled';
+  const ftOk    = ftResult.status   === 'fulfilled';
+
+  if (baseOk) {
+    renderResult('base', baseResult.value, numbers, target);
+  } else {
+    renderError('base', baseResult.reason?.message || 'Request failed');
+  }
+
+  if (ftOk) {
+    renderResult('ft', ftResult.value, numbers, target);
+  } else {
+    renderError('ft', ftResult.reason?.message || 'Request failed');
+  }
+
+  // Record in history regardless of success/failure
+  addToHistory(
+    numbers, target,
+    baseOk ? baseResult.value : null,
+    ftOk   ? ftResult.value   : null,
+    baseOk ? null : (baseResult.reason?.message || 'Request failed'),
+    ftOk   ? null : (ftResult.reason?.message   || 'Request failed')
+  );
+
+  btn.disabled    = false;
+  btn.textContent = '▶  Run Comparison';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('runBtn').disabled) {
+    runComparison();
+  }
+});
+</script>
+</body>
+</html>
